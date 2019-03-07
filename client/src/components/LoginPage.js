@@ -1,7 +1,7 @@
 import React from "react";
 import {socket} from "../index";
 
-class MainPage extends React.Component {
+class LoginPage extends React.Component {
   constructor(props) {
     super(props);
     this.login = this.login.bind(this);
@@ -22,9 +22,9 @@ class MainPage extends React.Component {
 
     login(){
       var name = document.getElementById('nickname').value;
-      socket.emit('show_game_list', name);
+      socket.emit('login_and_show_game_list', name);
     }
 
 }
 
-export default MainPage;
+export default LoginPage;

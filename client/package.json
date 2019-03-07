@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "bootstrap": "^4.3.1",
+    "chess.js": "^0.10.2",
     "chessboardjs": "0.0.1",
     "jquery": "^3.3.1",
     "react": "^16.8.3",

@@ -1,7 +1,7 @@
 import React from 'react';
 import {socket} from "../index";
 
-class CreateGame extends React.Component {
+class CreateChellange extends React.Component {
   constructor(props) {
   super(props);
   this.state = {
@@ -10,7 +10,7 @@ class CreateGame extends React.Component {
     'time': 3,
     'inc' : 0
   };
-  this.createGame = this.createGame.bind(this);
+  this.createChellange = this.createChellange.bind(this);
 }
 
     render() {
@@ -26,7 +26,7 @@ class CreateGame extends React.Component {
           <button type="button" className="btn btn-default" id="bturn" onClick={(trn) => this.selectTrn("black")} style={{backgroundColor: "#000000", color:"#FFFFFF"}}>Black</button>
           <br/>
           <br/><br/><br/>
-          <button type="button" className="btn btn-light" id="createGameBTN" onClick={this.createGame}>Create Game</button>
+          <button type="button" className="btn btn-light" id="createGameBTN" onClick={this.createChellange}>Create Game</button>
           </div>
       )
     }
@@ -42,12 +42,12 @@ class CreateGame extends React.Component {
       }
     }
 
-    createGame(){
+    createChellange(){
       const turn = this.state.turn;
       const time = document.getElementById("time").value;
       const inc = document.getElementById("inc").value;
-      socket.emit("createGame", {'name': this.props.name, 'time': parseInt(time) * 60, 'inc': parseInt(inc), 'color': turn})
+      socket.emit("createChellange", {'name': this.props.name, 'time': parseInt(time) * 60, 'inc': parseInt(inc), 'color': turn})
     }
 }
 
-export default CreateGame;
+export default CreateChellange;

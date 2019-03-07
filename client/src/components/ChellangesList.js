@@ -1,13 +1,13 @@
 import React from "react";
 import ReactDOM from 'react-dom'
 import {socket} from "../index";
-import CreateGame from "./CreateGame"
+import CreateChellange from "./CreateChellange"
 
 class ChellangesList extends React.Component {
     constructor(props) {
       super(props);
       this.creatNewGame = this.creatNewGame.bind(this);
-      this.selectGame = this.selectGame.bind(this);
+      this.selectChellange = this.selectChellange.bind(this);
     }
     render() {
       let uKey = 0;
@@ -16,7 +16,7 @@ class ChellangesList extends React.Component {
         let rowID = `row${game['_id']}`;
            return (game['name'] !== this.props.name ?
             (<li key={uKey++} id={rowID} className="list-group-item"
-                        onClick={(chellangeId) => this.selectGame(game['_id'])}>
+                        onClick={(chellangeId) => this.selectChellange(game['_id'])}>
                       <div className='row'>
                         <div className='col-md-2'>
                           <h4>{parseInt(game['time'] / 60)} + {game['inc']}</h4>
@@ -28,9 +28,9 @@ class ChellangesList extends React.Component {
                           {
                             game['color'] === 'b'?
                             (
-                              <img src={require('./black.png')} alt='black'/>
+                              <img src={require('./img/black.png')} alt='black'/>
                             ):(
-                              <img src={require('./white.png')} alt='white'/>
+                              <img src={require('./img/white.png')} alt='white'/>
                             )
                           }
                         </div>
@@ -48,9 +48,9 @@ class ChellangesList extends React.Component {
                         {
                           game['color'] === 'b'?
                             (
-                              <img src={require('./black.png')} alt='black'/>
+                              <img src={require('./img/black.png')} alt='black'/>
                             ):(
-                              <img src={require('./white.png')} alt='white'/>
+                              <img src={require('./img/white.png')} alt='white'/>
                             )
                           }
                       </div>
@@ -65,17 +65,17 @@ class ChellangesList extends React.Component {
               {rows}
             </ul>
             <hr/>
-            <button type="button" className="btn btn-light" onClick={this.creatNewGame}>{'Create new game'}</button>
+            <button type="button" className="btn btn-light" onClick={this.creatNewGame}>{'Create new chellange'}</button>
           </div>
       )
     }
 
-    selectGame(chellangeId){
-      socket.emit('selectGame', {'name': this.props.name, 'chellangeId': chellangeId})
+    selectChellange(chellangeId){
+      socket.emit('selectChellange', {'name': this.props.name, 'chellangeId': chellangeId})
     }
 
     creatNewGame(){
-      ReactDOM.render(<div><CreateGame name={this.props.name}/></div>, document.getElementById("root"));
+      ReactDOM.render(<div><CreateChellange name={this.props.name}/></div>, document.getElementById("root"));
     }
 }
 
