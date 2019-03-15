@@ -1,20 +1,35 @@
 import React from "react";
-import ReactDOM from 'react-dom'
-import {socket} from "../index";
 import CreateChellange from "./CreateChellange"
 
 class ChellangesList extends React.Component {
     constructor(props) {
       super(props);
+      this.state = {
+        username: this.props.username,
+        chellanges: [],
+        createGameMode: false
+      }
+
       this.creatNewGame = this.creatNewGame.bind(this);
       this.selectChellange = this.selectChellange.bind(this);
+      this.closeCreateGameForm = this.closeCreateGameForm.bind(this);
+      this.refreshChellangeList = this.refreshChellangeList.bind(this);
+
+      this.props.socket.on('chellangeList', (chellanges) =>{
+        this.setState({chellanges: chellanges})
+      })
     }
+
+    componentDidMount(){
+      this.props.socket.emit('show_chellange_list');
+    }
+
     render() {
       let uKey = 0;
-      var chellangeList = this.props.chellanges;
+      var chellangeList = this.state.chellanges;
       var rows = chellangeList.map((game) => {
         let rowID = `row${game['_id']}`;
-           return (game['name'] !== this.props.name ?
+           return (game['name'] !== this.state.username ?
             (<li key={uKey++} id={rowID} className="list-group-item"
                         onClick={(chellangeId) => this.selectChellange(game['_id'])}>
                       <div className='row'>
@@ -60,22 +75,45 @@ class ChellangesList extends React.Component {
 
         return (
           <div className="container">
-            <hr/>
-            <ul className="list-group list-group-flush">
-              {rows}
-            </ul>
-            <hr/>
-            <button type="button" className="btn btn-light" onClick={this.creatNewGame}>{'Create new chellange'}</button>
+            {
+              this.state.createGameMode ? (
+                <CreateChellange name={this.state.username} socket={this.props.socket}
+                    closeCreateGameForm={this.closeCreateGameForm}/>
+              ):
+              <div>
+                <hr/>
+                <img src={require('./img/refresh.png')} alt='refresh'
+                    style={{width:'7%', height:'7%'}} onClick={this.refreshChellangeList}/>
+                <div>
+                  <ul className="list-group list-group-flush">
+                    {rows}
+                  </ul>
+                  <hr/>
+                  <button type="button" className="btn btn-light" onClick={this.creatNewGame}>
+                      {'Create new chellange'}
+                  </button>
+                </div>
+              </div>
+            }
           </div>
       )
     }
 
     selectChellange(chellangeId){
-      socket.emit('selectChellange', {'name': this.props.name, 'chellangeId': chellangeId})
+      this.props.socket.emit('selectChellange', {'name': this.state.username, 'chellangeId': chellangeId})
     }
 
     creatNewGame(){
-      ReactDOM.render(<div><CreateChellange name={this.props.name}/></div>, document.getElementById("root"));
+      this.setState({createGameMode: true});
+    }
+
+    closeCreateGameForm(){
+      this.setState({createGameMode: false});
+      this.props.socket.emit('show_chellange_list');
+    }
+
+    refreshChellangeList(){
+      this.props.socket.emit('show_chellange_list');
     }
 }
 

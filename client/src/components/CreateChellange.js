@@ -1,5 +1,4 @@
 import React from 'react';
-import {socket} from "../index";
 
 class CreateChellange extends React.Component {
   constructor(props) {
@@ -46,7 +45,8 @@ class CreateChellange extends React.Component {
       const turn = this.state.turn;
       const time = document.getElementById("time").value;
       const inc = document.getElementById("inc").value;
-      socket.emit("createChellange", {'name': this.props.name, 'time': parseInt(time) * 60, 'inc': parseInt(inc), 'color': turn})
+      this.props.socket.emit("createChellange", {'name': this.props.name, 'time': parseInt(time) * 60, 'inc': parseInt(inc), 'color': turn});
+      this.props.closeCreateGameForm();
     }
 }
 

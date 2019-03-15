@@ -1,62 +1,75 @@
 import React from "react";
-import {socket} from "../index";
 import Chess from "../../node_modules/chess.js/chess";
 import ChessBoard from "chessboardjs";
+import Clock from './Clock'
+import Pgn from './Pgn'
 
 class PlayGame extends React.Component {
   constructor(props) {
   super(props);
   const gameData = this.props.gameData;
   this.state = {
-    time: gameData['time'],
-    increase: gameData['inc'],
-    side: (socket.id === gameData['wSid'] ? 'white' : 'black'),
-    name: (socket.id === gameData['wSid'] ? gameData['wPlayer'] : gameData['bPlayer']),
-    gameId: gameData["_id"],
-    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    bPlayer: gameData['bPlayer'],
-    wPlayer: gameData['wPlayer'],
-    whiteTime: gameData['wTime'],
-    blackTime: gameData['bTime']
+      time: gameData['time'],
+      increase: gameData['inc'],
+      side: (this.props.socket.id === gameData['wSid'] ? 'white' : 'black'),
+      name: (this.props.socket.id === gameData['wSid'] ? gameData['wPlayer'] : gameData['bPlayer']),
+      gameId: gameData["_id"],
+      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      bPlayer: gameData['bPlayer'],
+      wPlayer: gameData['wPlayer'],
+      whiteTime: gameData['wTime'],
+      blackTime: gameData['bTime'],
+      moves: []
     }
     this.updateGameFen = this.updateGameFen.bind(this);
-  }
 
-  componentWillReceiveProps(nextProps){
-    if(nextProps["move"]){
+    this.props.socket.on('move', (data) =>{
       var fen = this.state.fen;
-      var move = nextProps["move"];
       var game = new Chess(fen);
+
+      var move = data["move"];
       game.move(move, {sloppy: true});
+
+      var moves = this.state.moves;
+      moves.push(move);
+
       this.setState({
         fen: game.fen(),
-        whiteTime: nextProps["wt"],
-        blackTime: nextProps["bt"]
+        whiteTime: data["wt"],
+        blackTime: data["bt"],
+        moves: moves
       });
+    })
+  }
+
+  getSansFromMoves(moves){
+    var game = new Chess();
+    var sans = [];
+    for(var i=0; i<moves.length; i++ ){
+      sans.push(game.move(moves[i], {sloppy: true}).san);
     }
+    return [sans, game.fen()]
   }
 
   render() {
+    var wClock = <Clock time={this.state.whiteTime} color={0}
+          countDown={this.state.moves.length % 2 === 0}/>
+    var bClock = <Clock time={this.state.blackTime} color={1}
+          countDown={this.state.moves.length % 2 === 1}/>
       return (
         <div className="container">
-          <div className='row'>
-            <div className='col-md-8'>
-              <div className='row'>
-                <div className='col-md-8'>
-                    <h3>White Player: {this.state.whitePlayerId}  Time: {this.state.whiteTime}</h3>
-                    <h3>Black Player: {this.state.blackPlayerId}  Time: {this.state.blackTime}</h3>
-                    <div id="chessboard" style={{"width": "100%"}}></div>
-                </div>
-                <div className='col-md-4'>
-                  pgn
-                </div>
-              </div>
-              <div className='row'>
-                another games
-              </div>
+          <div className='row' id="gameBoard" stlye={{padding: '20px'}}>
+            <div className='col-md-6'>
+              {
+                this.state.side === 'black' ? wClock : bClock
+              }
+              <div id="chessboard" style={{"width": "80%"}}></div>
+              {
+                this.state.side === 'white' ? wClock : bClock
+              }
             </div>
-            <div className='col-md-4'>
-              chellange List
+            <div className='col-md-6'>
+              <Pgn moves={this.state.moves} setFen={this.updateGameFen} getSansFromMoves={this.getSansFromMoves}/>
             </div>
           </div>
         </div>
@@ -68,6 +81,8 @@ class PlayGame extends React.Component {
     const gameId = this.state.gameId;
     var updateFen = this.updateGameFen;
     const userTurn = this.state.side;
+    const socket = this.props.socket;
+    const isDraggable = (this.state.fen === this.getSansFromMoves(this.state.moves)[1]) ? true : false;
     var board,
     move,
     game = new Chess(fen);
@@ -102,8 +117,8 @@ class PlayGame extends React.Component {
 
     var onSnapEnd = function() {
       board.position(game.fen());
-      updateFen(game.fen());
       var userMove = move["from"] + move["to"];
+      updateFen(game.fen(), userMove);
       var data = {
           "gameId": gameId,
           "move": userMove,
@@ -112,7 +127,7 @@ class PlayGame extends React.Component {
     };
 
     var cfg = {
-      draggable: true,
+      draggable: isDraggable,
       orientation: userTurn,
       position:fen,
       onDragStart: onDragStart,
@@ -129,10 +144,19 @@ gameOver(game){
   console.log(game);
 }
 
-updateGameFen(currentFen){
-  this.setState({
-    fen: currentFen
-  });
+updateGameFen(currentFen, move){
+  if(move){
+    var moves = this.state.moves;
+    moves.push(move);
+    this.setState({
+      moves: moves,
+      fen: currentFen
+    });
+  }else{
+    this.setState({
+      fen: currentFen
+    });
+  }
 }
 
 componentDidUpdate(){

@@ -25,25 +25,28 @@ def convertIdToStr(document):
     document['_id'] = str(document['_id'])
     return document
 
-def send_chellange_list(sid, name):
+def send_chellange_list(sid):
     chellanges = GAME_DB.chellange.find()
     chellanges = list(map(convertIdToStr, chellanges))
-    SIO.emit('chellangeList', {'chellanges': chellanges, 'name': name}, room=sid)
+    SIO.emit('chellangeList', chellanges, room=sid)
 
-@SIO.on('login_and_show_game_list')
-def on_login_and_show_game_list(sid, name):
+@SIO.on('login')
+def on_login(sid, name):
     players_count_with_name = GAME_DB.players.find({'name': name}).count()
     if players_count_with_name > 0:
-        SIO.emit('chooseNewNickname', room=sid)
+        SIO.emit('confirm_user_name', False, room=sid)
     else:
+        SIO.emit('confirm_user_name', True, room=sid)
         GAME_DB.players.insert_one({'name': name, 'sid': sid})
-        send_chellange_list(sid, name)
+
+@SIO.on('show_chellange_list')
+def on_show_chellange_list(sid):
+    send_chellange_list(sid)
 
 @SIO.on('createChellange')
 def on_createChellange(sid, data):
     data['sid'] = sid
     GAME_DB.chellange.insert_one(data)
-    send_chellange_list(sid, data['name'])
 
 def createGame(chellange, name):
     game = {
