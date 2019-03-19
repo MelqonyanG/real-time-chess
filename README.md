@@ -57,3 +57,7 @@ localhost:3000
 **screenshots**
 ![screenshot](/screenshot_game.png)
 ![screenshot](/screenshot_games_list.png)
+
+##ToDo
+  - add resign action
+  - add draw action
